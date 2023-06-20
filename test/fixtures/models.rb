@@ -26,6 +26,8 @@ end
 class Physician < ActiveRecord::Base
   has_many :appointments
   has_many :patients, through: :appointments
+  has_many :towns, through: :patients
+  has_many :states, through: :patients
 end
 
 class Appointment < ActiveRecord::Base
@@ -36,6 +38,8 @@ end
 class Patient < ActiveRecord::Base
   has_many :appointments
   has_many :physicians, through: :appointments
+  belongs_to :town
+  has_one :state, through: :town
 end
 
 class Assembly < ActiveRecord::Base
@@ -44,4 +48,12 @@ end
 
 class Part < ActiveRecord::Base
   has_and_belongs_to_many :assemblies
+end
+
+class Town < ActiveRecord::Base
+  belongs_to :state
+end
+
+class State < ActiveRecord::Base
+  has_many :towns
 end
