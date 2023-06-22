@@ -146,7 +146,8 @@ class ActiveRecordAliasedJoinsTest < Minitest::Test
     Person.primary_key = :identity
     records = Person.joins_with_alias(:author_detail, :ad)
     sql = records.to_sql
-    assert_equal 'SELECT "people".* FROM "people" INNER JOIN "author_details" "ad" ON "people"."identity" = "ad"."person_id"',
+    assert_equal 'SELECT "people".* FROM "people" ' \
+                 'INNER JOIN "author_details" "ad" ON "people"."identity" = "ad"."person_id"',
                  sql
   ensure
     Person.primary_key = :id
