@@ -2,24 +2,24 @@
 
 ### MODELS
 class Person < ActiveRecord::Base
-  has_many :posts, foreign_key: 'author_id'
-  has_many :comments, foreign_key: 'author_id'
-  has_many :book_comments, foreign_key: 'author_id'
+  has_many :posts, foreign_key: 'auth_id'
+  has_many :comments, foreign_key: 'auth_id'
+  has_many :book_comments, foreign_key: 'auth_id'
   has_one :author_detail
 end
 
 class AuthorDetail < ActiveRecord::Base
-  belongs_to :author, class_name: 'Person', foreign_key: 'person_id'
+  belongs_to :author, class_name: 'Person', foreign_key: 'prsn_id'
 end
 
 class Post < ActiveRecord::Base
-  belongs_to :author, class_name: 'Person', foreign_key: 'author_id'
-  belongs_to :writer, class_name: 'Person', foreign_key: 'author_id'
+  belongs_to :author, class_name: 'Person', foreign_key: 'auth_id'
+  belongs_to :writer, class_name: 'Person', foreign_key: 'auth_id'
   has_many :comments
 end
 
 class Comment < ActiveRecord::Base
-  belongs_to :author, class_name: 'Person', foreign_key: 'author_id'
+  belongs_to :author, class_name: 'Person', foreign_key: 'auth_id'
   belongs_to :post
 end
 
@@ -43,17 +43,19 @@ class Patient < ActiveRecord::Base
 end
 
 class Assembly < ActiveRecord::Base
-  has_and_belongs_to_many :parts
+  has_and_belongs_to_many :parts, association_foreign_key: :part_number
 end
 
 class Part < ActiveRecord::Base
+  self.primary_key = :number
   has_and_belongs_to_many :assemblies
 end
 
 class Town < ActiveRecord::Base
-  belongs_to :state
+  belongs_to :state, foreign_key: :state_code
 end
 
 class State < ActiveRecord::Base
+  self.primary_key = :code
   has_many :towns
 end
