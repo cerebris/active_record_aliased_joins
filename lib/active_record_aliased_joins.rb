@@ -56,7 +56,7 @@ module ActiveRecordAliasedJoins
       s = arel_table
       related_klass = reflection.klass
       r = related_klass.arel_table.alias(alias_name)
-      s.join(r, join_klass).on(s[reflection.foreign_key.to_sym].eq(r[primary_key.to_sym]))
+      s.join(r, join_klass).on(s[reflection.foreign_key.to_sym].eq(r[related_klass.primary_key.to_sym]))
     end
 
     def join_with_alias_through(reflection, association_name, alias_name, join_klass = Nodes::InnerJoin)

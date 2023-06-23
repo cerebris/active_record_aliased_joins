@@ -15,6 +15,28 @@ class ActiveRecordAliasedJoinsTest < Minitest::Test
                  sql
   end
 
+  def test_it_can_alias_has_many_with_custom_primary_key_source
+    Post.primary_key = :identity
+    records = Post.joins_with_alias(:comments, :jr_post_comments)
+    sql = records.to_sql
+    assert_equal 'SELECT "posts".* FROM "posts" ' \
+                 'INNER JOIN "comments" "jr_post_comments" ON "posts"."identity" = "jr_post_comments"."post_id"',
+                 sql
+  ensure
+    Post.primary_key = :id
+  end
+
+  def test_it_can_alias_has_many_with_custom_primary_key_related
+    Comment.primary_key = :identity
+    records = Post.joins_with_alias(:comments, :jr_post_comments)
+    sql = records.to_sql
+    assert_equal 'SELECT "posts".* FROM "posts" ' \
+                 'INNER JOIN "comments" "jr_post_comments" ON "posts"."id" = "jr_post_comments"."post_id"',
+                 sql
+  ensure
+    Comment.primary_key = :id
+  end
+
   def test_it_can_alias_has_many_outer
     records = Post.left_joins_with_alias(:comments, :jr_post_comments)
     sql = records.to_sql
@@ -28,8 +50,8 @@ class ActiveRecordAliasedJoinsTest < Minitest::Test
     sql = records.to_sql
     assert_equal 'SELECT "posts".* FROM "posts" ' \
                  'INNER JOIN "comments" "jr_post_comments" ON "posts"."id" = "jr_post_comments"."post_id" ' \
-                 'INNER JOIN "people" ON "people"."id" = "posts"."author_id" ' \
-                 'INNER JOIN "comments" ON "comments"."author_id" = "people"."id"',
+                 'INNER JOIN "people" ON "people"."id" = "posts"."auth_id" ' \
+                 'INNER JOIN "comments" ON "comments"."auth_id" = "people"."id"',
                  sql
   end
 
@@ -38,8 +60,8 @@ class ActiveRecordAliasedJoinsTest < Minitest::Test
     sql = records.to_sql
     assert_equal 'SELECT "posts".* FROM "posts" ' \
                  'LEFT OUTER JOIN "comments" "jr_post_comments" ON "posts"."id" = "jr_post_comments"."post_id" ' \
-                 'INNER JOIN "people" ON "people"."id" = "posts"."author_id" ' \
-                 'INNER JOIN "comments" ON "comments"."author_id" = "people"."id"',
+                 'INNER JOIN "people" ON "people"."id" = "posts"."auth_id" ' \
+                 'INNER JOIN "comments" ON "comments"."auth_id" = "people"."id"',
                  sql
   end
 
@@ -79,15 +101,37 @@ class ActiveRecordAliasedJoinsTest < Minitest::Test
     records = Post.joins_with_alias(:author, :jr_post_author)
     sql = records.to_sql
     assert_equal 'SELECT "posts".* FROM "posts" ' \
-                 'INNER JOIN "people" "jr_post_author" ON "posts"."author_id" = "jr_post_author"."id"',
+                 'INNER JOIN "people" "jr_post_author" ON "posts"."auth_id" = "jr_post_author"."id"',
                  sql
+  end
+
+  def test_it_can_alias_belongs_to_with_custom_primary_key_on_source
+    Post.primary_key = :identity
+    records = Post.joins_with_alias(:author, :jr_post_author)
+    sql = records.to_sql
+    assert_equal 'SELECT "posts".* FROM "posts" ' \
+                 'INNER JOIN "people" "jr_post_author" ON "posts"."auth_id" = "jr_post_author"."id"',
+                 sql
+  ensure
+    Post.primary_key = :id
+  end
+
+  def test_it_can_alias_belongs_to_with_custom_primary_key_on_related
+    Person.primary_key = :identity
+    records = Post.joins_with_alias(:author, :jr_post_author)
+    sql = records.to_sql
+    assert_equal 'SELECT "posts".* FROM "posts" ' \
+                 'INNER JOIN "people" "jr_post_author" ON "posts"."auth_id" = "jr_post_author"."identity"',
+                 sql
+  ensure
+    Person.primary_key = :id
   end
 
   def test_it_can_alias_belongs_to_outer
     records = Post.left_joins_with_alias(:author, :jr_post_author)
     sql = records.to_sql
     assert_equal 'SELECT "posts".* FROM "posts" ' \
-                 'LEFT OUTER JOIN "people" "jr_post_author" ON "posts"."author_id" = "jr_post_author"."id"',
+                 'LEFT OUTER JOIN "people" "jr_post_author" ON "posts"."auth_id" = "jr_post_author"."id"',
                  sql
   end
 
@@ -96,6 +140,27 @@ class ActiveRecordAliasedJoinsTest < Minitest::Test
     sql = records.to_sql
     assert_equal 'SELECT "people".* FROM "people" INNER JOIN "author_details" "ad" ON "people"."id" = "ad"."person_id"',
                  sql
+  end
+
+  def test_it_can_alias_has_one_with_custom_primary_key_on_source
+    Person.primary_key = :identity
+    records = Person.joins_with_alias(:author_detail, :ad)
+    sql = records.to_sql
+    assert_equal 'SELECT "people".* FROM "people" ' \
+                 'INNER JOIN "author_details" "ad" ON "people"."identity" = "ad"."person_id"',
+                 sql
+  ensure
+    Person.primary_key = :id
+  end
+
+  def test_it_can_alias_has_one_with_custom_primary_key_on_related
+    AuthorDetail.primary_key = :identity
+    records = Person.joins_with_alias(:author_detail, :ad)
+    sql = records.to_sql
+    assert_equal 'SELECT "people".* FROM "people" INNER JOIN "author_details" "ad" ON "people"."id" = "ad"."person_id"',
+                 sql
+  ensure
+    AuthorDetail.primary_key = :id
   end
 
   def test_it_can_alias_has_one_outer
@@ -113,7 +178,7 @@ class ActiveRecordAliasedJoinsTest < Minitest::Test
 
     assert_equal 'SELECT "assemblies".* FROM "assemblies" ' \
                  'INNER JOIN "assemblies_parts" ON "assemblies"."id" = "assemblies_parts"."assembly_id" ' \
-                 'INNER JOIN "parts" "jr_parts" ON "assemblies_parts"."part_id" = "jr_parts"."id"',
+                 'INNER JOIN "parts" "jr_parts" ON "assemblies_parts"."part_number" = "jr_parts"."number"',
                  sql
   end
 
@@ -124,7 +189,7 @@ class ActiveRecordAliasedJoinsTest < Minitest::Test
 
     assert_equal 'SELECT "assemblies".* FROM "assemblies" ' \
                  'LEFT OUTER JOIN "assemblies_parts" ON "assemblies"."id" = "assemblies_parts"."assembly_id" ' \
-                 'LEFT OUTER JOIN "parts" "jr_parts" ON "assemblies_parts"."part_id" = "jr_parts"."id"',
+                 'LEFT OUTER JOIN "parts" "jr_parts" ON "assemblies_parts"."part_number" = "jr_parts"."number"',
                  sql
   end
 
